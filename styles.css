@@ -1,0 +1,108 @@
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+}
+
+.scaffold {
+    margin: 5px;
+    padding: auto;
+    border: 10px solid #ddd;
+    border-radius: 5px;
+    background-color: teal;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.logo {
+    display: block;
+    margin: 0 auto;
+}
+
+.app-title {
+    text-align: center;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+
+.add-button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.section-title {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid #000;
+    background-color: #fff;
+}
+
+.song-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.song-box {
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.song-name {
+    font-weight: bold;
+}
+
+.artist-name {
+    color: grey;
+    font-size: 0.9em;
+}
+
+/* Media Query for Mobile View */
+@media only screen and (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+
+    .form-container,
+    .song-box {
+        margin: 10px;
+        padding: 10px;
+    }
+
+    .add-button {
+        margin: 10px auto;
+    }
+}
