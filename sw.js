@@ -1,13 +1,13 @@
 
-
+const myCacheStorage = "Space music app";
 self.addEventListener('install', (event) => {
-    console.log('[SW] Install:', event);
+    
   
     self.skipWaiting();
 
-    console.log(caches);
+
     event.waitUntil(
-        caches.open('Saiaf Space')
+        caches.open(myCacheStorage)
             .then((cache) => {
             
                
@@ -29,112 +29,52 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// self.addEventListener('activate', (event) => {
-//     console.log('[SW] Activate:', event);
 
- 
-//     event.waitUntil(clients.claim());
+self.addEventListener('activate', async (event) => {
+    await self.clients.claim();
 
-   
-// })
-
-// self.addEventListener('activate', (event) => {
-//     event.waitUntil(
-//         Promise.all([
-//             clients.claim(),
-//             caches.keys().then((cName) => {
-//                 return Promise.all(
-//                     cName
-//                         .filter((name) => name !== cacheStorage)
-//                         .map((cacheDelete) => {
-//                             return caches.delete(cacheDelete);
-//                         })
-//                 );
-//             })
-//         ])
-//     );
-// });
-
-// self.addEventListener('fetch', (event) => {
-//     event.respondWith(
-//         caches.match(event.request)
-//             .then((response) => {
-//                 if (response) {
-//                     return response;
-//                 }
-//                 return networkFallback(event.request);
-//             })
-//             .catch(() => {
-//             })
-//     );
-// });
-
-// function networkFallback(reqq) {
-//     return caches.open(cacheStorage)
-//         .then(cache => {
-//             const res = cache.match(reqq);
-//             const req = fetch(reqq);
-
-//             return Promise.all([res, req])
-//                 .then(([res, netRes]) => {
-//                     if (netRes && netRes.status === 200) {
-//                         cache.put(reqq, netRes.clone());
-//                     }
-//                     return netRes || res;
-//                 })
-//                 .catch(() => {
-//                     return res;
-//                 });
-//         });
-// }
-self.addEventListener('activate', (evt) => {
-    evt.waitUntil(
-        Promise.all([
-            self.clients.claim(),
-            caches.keys().then((cacheNames) => {
-                return Promise.all(
-                    cacheNames
-                        .filter((name) => name !== myCacheStorage)
-                        .map((cacheToDelete) => {
-                            return caches.delete(cacheToDelete);
-                        })
-                );
+    const cacheNames = await caches.keys();
+    await Promise.all(
+        cacheNames
+            .filter((name) => name !== myCacheStorage)
+            .map(async (cacheToDelete) => {
+                await caches.delete(cacheToDelete);
             })
-        ])
     );
 });
 
-self.addEventListener('fetch', (evt) => {
-    evt.respondWith(
-        caches.match(evt.request)
-            .then((cachedResponse) => {
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        (async () => {
+            try {
+                const cachedResponse = await caches.match(event.request);
                 if (cachedResponse) {
                     return cachedResponse;
                 }
-                return customNetworkFallback(evt.request);
-            })
-            .catch(() => {
-               
-            })
+                return customNetworkFallback(event.request);
+            } catch (error) {
+                console.error('Error during fetch event:', error);
+                throw error;
+            }
+        })()
     );
 });
 
-function customNetworkFallback(req) {
-    return caches.open(myCacheStorage)
-        .then(cache => {
-            const cachedRes = cache.match(req);
-            const fetchReq = fetch(req);
+async function customNetworkFallback(request) {
+    const cache = await caches.open(myCacheStorage);
+    const cachedResponse = await cache.match(request);
+    
+    try {
+        const networkResponse = await fetch(request);
 
-            return Promise.all([cachedRes, fetchReq])
-                .then(([cachedRes, networkRes]) => {
-                    if (networkRes && networkRes.status === 200) {
-                        cache.put(req, networkRes.clone());
-                    }
-                    return networkRes || cachedRes;
-                })
-                .catch(() => {
-                    return cachedRes;
-                });
-        });
+        if (networkResponse && networkResponse.status === 200) {
+            cache.put(request, networkResponse.clone());
+            return networkResponse;
+        }
+
+        throw new Error(`Failed to fetch: ${networkResponse.status}`);
+    } catch (error) {
+        console.error('Error during network fallback:', error);
+        return cachedResponse || new Response('Failed to fetch resource');
+    }
 }
-
