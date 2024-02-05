@@ -1,72 +1,23 @@
-// // service-worker.js
 
-// const cacheName = 'music-app-cache-v1';
-// const appShellFiles = [
-//   '/',
-//   '/index.html',
-//   '/styles.css',
-//   '/script.js',
-//   '/manifest.json',
-//   '/assets/icons/icon-192x192.png',
-//   '/assets/icons/icon-512x512.png',
-// ];
 
-// self.addEventListener('install', (event) => {
-//   event.waitUntil(
-//     caches.open(cacheName).then((cache) => {
-//       return cache.addAll(appShellFiles);
-//     })
-//   );
-// });
-
-// self.addEventListener('activate', (event) => {
-//   event.waitUntil(
-//     caches.keys().then((cacheNames) => {
-//       return Promise.all(
-//         cacheNames.map((name) => {
-//           if (name !== cacheName) {
-//             return caches.delete(name);
-//           }
-//         })
-//       );
-//     })
-//   );
-// });
-
-// self.addEventListener('fetch', (event) => {
-//   event.respondWith(
-//     caches.match(event.request).then((response) => {
-//       return (
-//         response ||
-//         fetch(event.request).then((fetchResponse) => {
-//           return caches.open(cacheName).then((cache) => {
-//             cache.put(event.request, fetchResponse.clone());
-//             return fetchResponse;
-//           });
-//         })
-//       );
-//     })
-//   );
-// });
-console.log(self);
 self.addEventListener('install', (event) => {
     console.log('[SW] Install:', event);
-    // Activate itself, no need to wait for the user to activate
+  
     self.skipWaiting();
 
     console.log(caches);
     event.waitUntil(
-        caches.open('cacheAssets')
+        caches.open('Saiaf Space')
             .then((cache) => {
-                console.log('Cache', cache)
-                // cache.add('/index.html');
-                // cache.add('/app.js');
+            
+               
                 cache.addAll([
                     '/',
                     '/index.html',
                     '/styles.css',
                     '/script.js',
                     '/manifest.json',
+                    '/assets/favicon-32x32.png',
                     '/assets/icons/icon-192x192.png',
                     '/assets/icons/icon-512x512.png',
                 ]);
@@ -78,25 +29,112 @@ self.addEventListener('install', (event) => {
     );
 });
 
-self.addEventListener('activate', (event) => {
-    console.log('[SW] Activate:', event);
+// self.addEventListener('activate', (event) => {
+//     console.log('[SW] Activate:', event);
 
-    // Immediately gets control over the client's page
-    event.waitUntil(clients.claim());
+ 
+//     event.waitUntil(clients.claim());
 
-    // This line will only be executed after 
-    // getting control over all open pages.
-})
+   
+// })
+
+// self.addEventListener('activate', (event) => {
+//     event.waitUntil(
+//         Promise.all([
+//             clients.claim(),
+//             caches.keys().then((cName) => {
+//                 return Promise.all(
+//                     cName
+//                         .filter((name) => name !== cacheStorage)
+//                         .map((cacheDelete) => {
+//                             return caches.delete(cacheDelete);
+//                         })
+//                 );
+//             })
+//         ])
+//     );
+// });
 
 // self.addEventListener('fetch', (event) => {
 //     event.respondWith(
 //         caches.match(event.request)
 //             .then((response) => {
-//                 console.log('Response:', response);
-//                 return response;
+//                 if (response) {
+//                     return response;
+//                 }
+//                 return networkFallback(event.request);
 //             })
-//             .catch((error) => {
-//                 console.log('Match Failed:', error);
+//             .catch(() => {
 //             })
 //     );
 // });
+
+// function networkFallback(reqq) {
+//     return caches.open(cacheStorage)
+//         .then(cache => {
+//             const res = cache.match(reqq);
+//             const req = fetch(reqq);
+
+//             return Promise.all([res, req])
+//                 .then(([res, netRes]) => {
+//                     if (netRes && netRes.status === 200) {
+//                         cache.put(reqq, netRes.clone());
+//                     }
+//                     return netRes || res;
+//                 })
+//                 .catch(() => {
+//                     return res;
+//                 });
+//         });
+// }
+self.addEventListener('activate', (evt) => {
+    evt.waitUntil(
+        Promise.all([
+            self.clients.claim(),
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames
+                        .filter((name) => name !== myCacheStorage)
+                        .map((cacheToDelete) => {
+                            return caches.delete(cacheToDelete);
+                        })
+                );
+            })
+        ])
+    );
+});
+
+self.addEventListener('fetch', (evt) => {
+    evt.respondWith(
+        caches.match(evt.request)
+            .then((cachedResponse) => {
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+                return customNetworkFallback(evt.request);
+            })
+            .catch(() => {
+               
+            })
+    );
+});
+
+function customNetworkFallback(req) {
+    return caches.open(myCacheStorage)
+        .then(cache => {
+            const cachedRes = cache.match(req);
+            const fetchReq = fetch(req);
+
+            return Promise.all([cachedRes, fetchReq])
+                .then(([cachedRes, networkRes]) => {
+                    if (networkRes && networkRes.status === 200) {
+                        cache.put(req, networkRes.clone());
+                    }
+                    return networkRes || cachedRes;
+                })
+                .catch(() => {
+                    return cachedRes;
+                });
+        });
+}
+

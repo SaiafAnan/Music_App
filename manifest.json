@@ -1,25 +1,27 @@
 {
     "name": "Saiaf Music App",
     "short_name": "Space",
+    "description": "Track of my favourite songs",
     "theme_color": "#1976d2",
     "background_color": "#fafafa",
     "display": "standalone",
-    "scope": "./",
-    "start_url": "./",
+    "orientation": "any",
+    "scope": "/",
+    "start_url": "/",
     "icons": [
         
         {
         "src": "assets/icons/icon-192x192.png",
         "sizes": "192x192",
         "type": "image/png",
-        "purpose": "maskable any"
+        "purpose": "any"
         },
         
         {
         "src": "assets/icons/icon-512x512.png",
         "sizes": "512x512",
         "type": "image/png",
-        "purpose": "maskable any"
+        "purpose": "maskable"
         }
     ]
 }
